@@ -103,3 +103,9 @@ of a few extra ticks.
 ## Used by
 
 [perio](https://github.com/himasudo/perio), an async I/O library built on io_uring.
+
+---
+
+## License
+
+MIT. See [LICENSE](LICENSE).
