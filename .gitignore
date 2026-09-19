@@ -1,0 +1,12 @@
+# build artifacts
+*.o
+cycles_demo
+
+# editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
