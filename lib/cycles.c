@@ -1,5 +1,6 @@
 #include "cycles.h"
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
@@ -88,4 +89,39 @@ void clockd_report(const char *name, uint64_t ticks, size_t reps)
     double per_op_ns    = clockd_ticks_to_ns(ticks) / (double)reps;
     printf("%-32s  %7.2f ticks/op   %7.2f ns/op\n",
            name, per_op_ticks, per_op_ns);
+}
+
+static int cmp_u64(const void *a, const void *b)
+{
+    uint64_t x = *(const uint64_t *)a, y = *(const uint64_t *)b;
+    return (x > y) - (x < y);
+}
+
+clockd_stats_t clockd_bench_stats(void (*fn)(void *), void *arg)
+{
+    for (int i = 0; i < CLOCKD_WARMUP; i++)
+        fn(arg);
+
+    uint64_t samples[CLOCKD_RUNS];
+    for (int r = 0; r < CLOCKD_RUNS; r++) {
+        uint64_t t0 = clockd_tsc();
+        fn(arg);
+        uint64_t t1 = clockd_tsc();
+        samples[r] = t1 - t0;
+    }
+
+    qsort(samples, CLOCKD_RUNS, sizeof(samples[0]), cmp_u64);
+
+    uint64_t sum = 0;
+    for (int r = 0; r < CLOCKD_RUNS; r++)
+        sum += samples[r];
+
+    clockd_stats_t st;
+    st.min  = samples[0];
+    st.p50  = samples[CLOCKD_RUNS / 2];
+    st.mean = (double)sum / (double)CLOCKD_RUNS;
+    st.p90  = samples[(CLOCKD_RUNS * 90) / 100];
+    st.p99  = samples[(CLOCKD_RUNS * 99) / 100];
+    st.max  = samples[CLOCKD_RUNS - 1];
+    return st;
 }
