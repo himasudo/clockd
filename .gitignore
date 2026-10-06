@@ -1,6 +1,8 @@
 # build artifacts
 *.o
 cycles_demo
+cache_sweep
+pingpong_demo
 
 # editor
 .vscode/
